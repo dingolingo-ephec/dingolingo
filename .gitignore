@@ -1,0 +1,43 @@
+# Dépendances
+node_modules/
+.pnp
+.pnp.js
+
+# Build (Vite)
+dist/
+dist-ssr/
+*.local
+
+# Cache et Logs
+.eslintcache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.vite/
+.turbo/
+
+# Environnement (Variables secrètes)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# IDE (VS Code, WebStorm)
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# TypeScript (Puisque tu es passé en JSX)
+# On ignore les fichiers de configuration restant si tu ne veux pas les supprimer
+tsconfig.json
+tsconfig.node.json
+*.tsbuildinfo
