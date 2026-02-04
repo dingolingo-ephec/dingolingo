@@ -1,14 +1,88 @@
 services:
+  # ===========================================
+  # TRAEFIK - Reverse Proxy + Certificats SSL
+  # ===========================================
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    command:
+      # API Dashboard (désactiver en prod si non nécessaire)
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+      # Providers
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      # Entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Redirection HTTP -> HTTPS
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      # Let's Encrypt
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:-admin@example.com}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      # Décommenter pour tester avec le staging Let's Encrypt (évite les rate limits)
+      # - "--certificatesresolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      # Logs
+      - "--log.level=INFO"
+      - "--accesslog=true"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt_data:/letsencrypt
+    networks:
+      - web
+      - internal
+    labels:
+      # Dashboard Traefik (optionnel, protégé par auth)
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN:-localhost}`)"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      # Basic Auth pour le dashboard (générer avec: htpasswd -nb admin password)
+      - "traefik.http.routers.dashboard.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_AUTH:-admin:$$apr1$$xyz$$hashedpassword}"
+    restart: unless-stopped
+
+  # ===========================================
+  # APPLICATION NEXT.JS
+  # ===========================================
   app:
     build: .
     container_name: nextjs_app
-    ports:
-      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://admin:mysecretpassword@db:5432/formation_db
+      - NODE_ENV=production
     env_file:
       - .env.local
     depends_on:
       - db
+    networks:
+      - internal
+    labels:
+      - "traefik.enable=true"
+      # Router HTTP -> HTTPS
+      - "traefik.http.routers.dingolingo.rule=Host(`${DOMAIN:-localhost}`)"
+      - "traefik.http.routers.dingolingo.entrypoints=websecure"
+      - "traefik.http.routers.dingolingo.tls.certresolver=letsencrypt"
+      # Service
+      - "traefik.http.services.dingolingo.loadbalancer.server.port=3000"
+      # Security headers middleware
+      - "traefik.http.routers.dingolingo.middlewares=security-headers"
+      - "traefik.http.middlewares.security-headers.headers.frameDeny=true"
+      - "traefik.http.middlewares.security-headers.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.security-headers.headers.browserXssFilter=true"
+      - "traefik.http.middlewares.security-headers.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.security-headers.headers.stsIncludeSubdomains=true"
+    restart: unless-stopped
 
+  # ===========================================
+  # BASE DE DONNÉES POSTGRESQL
+  # ===========================================
   db:
     image: postgres:15-alpine
     container_name: postgres_db
@@ -18,8 +92,19 @@ services:
       POSTGRES_DB: formation_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    networks:
+      - internal
+    restart: unless-stopped
+    # Port exposé uniquement en interne (pas accessible depuis l'extérieur)
+    # ports:
+    #   - "5432:5432"
+
+networks:
+  web:
+    external: false
+  internal:
+    external: false
 
 volumes:
   postgres_data:
+  letsencrypt_data:

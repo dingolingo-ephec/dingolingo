@@ -6,12 +6,22 @@ datasource db {
   provider = "postgresql"
 }
 
+// Table des rôles (IT, Direction, Secrétariat, etc.)
+model Role {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
+  users       User[]
+}
+
 model User {
   id             Int              @id @default(autoincrement())
   ad_guid        String           @unique
   role_id        Int
+  role           Role             @relation(fields: [role_id], references: [id])
+  department     String?          // Département (IT, RH, etc.)
   suivis         SuiviPeda[]
-  lessonProgress LessonProgress[] // Ajouté pour la relation inverse
+  lessonProgress LessonProgress[]
 }
 
 model Theme {

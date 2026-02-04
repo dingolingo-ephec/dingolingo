@@ -1,24 +1,23 @@
-# Utilisation d'une image légère de Node.js
 FROM node:20-alpine
+
+# Outils système nécessaires
+RUN apk add --no-cache libc6-compat python3 make g++
 
 WORKDIR /app
 
-# Installation des dépendances
 COPY package*.json ./
+
+# On repasse sur install pour régénérer le lockfile proprement
 RUN npm install
 
-# Copie du reste des fichiers
+# FORÇAGE DES BINAIRES NATIFS POUR ALPINE (MUSL)
+RUN npm install lightningcss-linux-x64-musl @tailwindcss/oxide-linux-x64-musl
+
 COPY . .
-# ... après le COPY . .
+
 RUN npx prisma generate
 RUN npm run build
-# ...
 
-# Build de l'application Next.js
-RUN npm run build
-
-# Exposition du port 3000
 EXPOSE 3000
 
-# Lancement de l'application
 CMD ["npm", "start"]

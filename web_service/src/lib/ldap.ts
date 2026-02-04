@@ -1,11 +1,29 @@
 import ldap from 'ldapjs';
 
+// Définir les rôles
+const ROLES = {
+  STUDENT: 1,
+  ADMIN: 2,
+};
+
 export const verifyLDAPCredentials = (username: string, password: string): Promise<any> => {
   return new Promise((resolve, reject) => {
     // 1. Mode simulation pour avancer sans l'AD des collègues
     if (process.env.NEXT_PUBLIC_MOCK_AUTH === "true") {
       if (username === "admin" && password === "admin") {
-        return resolve({ displayName: "Admin de Test", mail: "admin@entreprise.be" });
+        return resolve({ 
+          displayName: "Admin de Test", 
+          mail: "admin@entreprise.be",
+          isAdmin: true  // Flag pour identifier l'admin
+        });
+      }
+      // Utilisateur test normal
+      if (password === "test") {
+        return resolve({ 
+          displayName: username, 
+          mail: `${username}@entreprise.be`,
+          isAdmin: false
+        });
       }
       return reject(new Error("Identifiants de test incorrects"));
     }
@@ -37,3 +55,6 @@ export const verifyLDAPCredentials = (username: string, password: string): Promi
     });
   });
 };
+
+// Exporter les rôles pour les utiliser ailleurs
+export { ROLES };
