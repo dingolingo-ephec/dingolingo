@@ -7,24 +7,25 @@ datasource db {
 }
 
 model User {
-  id         Int           @id @default(autoincrement())
-  ad_guid    String        @unique
-  role_id    Int
-  suivis     SuiviPeda[]
+  id             Int              @id @default(autoincrement())
+  ad_guid        String           @unique
+  role_id        Int
+  suivis         SuiviPeda[]
+  lessonProgress LessonProgress[] // Ajouté pour la relation inverse
 }
 
 model Theme {
-  id          Int          @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
   nom         String
   description String?
   formations  Formation[]
 }
 
 model Formateur {
-  id          Int          @id @default(autoincrement())
-  ad_guid     String       @unique
-  bio_courte  String?
-  formations  Formation[]
+  id         Int         @id @default(autoincrement())
+  ad_guid    String      @unique
+  bio_courte String?
+  formations Formation[]
 }
 
 model Formation {
@@ -36,6 +37,7 @@ model Formation {
   formateur_id Int
   formateur    Formateur   @relation(fields: [formateur_id], references: [id])
   suivis       SuiviPeda[]
+  lessons      Lesson[] // Ajouté pour la relation inverse
 }
 
 model SuiviPeda {
@@ -48,4 +50,37 @@ model SuiviPeda {
   date_maj     DateTime  @updatedAt
 
   @@unique([user_id, formation_id])
+}
+
+model Lesson {
+  id           Int              @id @default(autoincrement())
+  title        String
+  order        Int
+  formation_id Int
+  formation    Formation        @relation(fields: [formation_id], references: [id])
+  exercises    Exercise[]
+  progress     LessonProgress[] // Ajouté pour la relation inverse
+}
+
+model Exercise {
+  id        Int    @id @default(autoincrement())
+  type      String
+  question  String
+  answer    String
+  options   Json?
+  lesson_id Int
+  lesson    Lesson @relation(fields: [lesson_id], references: [id])
+}
+
+model LessonProgress {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  user      User     @relation(fields: [user_id], references: [id])
+  lesson_id Int
+  lesson    Lesson   @relation(fields: [lesson_id], references: [id])
+  completed Boolean  @default(false)
+  score     Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@unique([user_id, lesson_id])
 }
