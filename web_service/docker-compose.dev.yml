@@ -21,6 +21,8 @@ services:
   db:
     image: postgres:15-alpine
     container_name: postgres_db
+    env_file:
+      - .env.local
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-admin}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devpassword}
