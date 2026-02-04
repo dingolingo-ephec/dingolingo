@@ -54,11 +54,10 @@ services:
   app:
     build: .
     container_name: nextjs_app
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - NODE_ENV=production
     env_file:
       - .env.local
+    environment:
+      - NODE_ENV=production
     depends_on:
       - db
     networks:

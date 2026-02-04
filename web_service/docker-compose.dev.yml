@@ -9,11 +9,10 @@ services:
     container_name: nextjs_app
     ports:
       - "3000:3000"
-    environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql://admin:devpassword@db:5432/formation_db}
-      - NODE_ENV=development
     env_file:
       - .env.local
+    environment:
+      - NODE_ENV=development
     depends_on:
       - db
     restart: unless-stopped
