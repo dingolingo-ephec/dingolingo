@@ -9,6 +9,10 @@ RUN npm install
 
 # Copie du reste des fichiers
 COPY . .
+# ... après le COPY . .
+RUN npx prisma generate
+RUN npm run build
+# ...
 
 # Build de l'application Next.js
 RUN npm run build
