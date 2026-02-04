@@ -10,7 +10,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=postgresql://admin:mysecretpassword@db:5432/formation_db
+      - DATABASE_URL=${DATABASE_URL:-postgresql://admin:devpassword@db:5432/formation_db}
       - NODE_ENV=development
     env_file:
       - .env.local
@@ -22,9 +22,9 @@ services:
     image: postgres:15-alpine
     container_name: postgres_db
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: mysecretpassword
-      POSTGRES_DB: formation_db
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devpassword}
+      POSTGRES_DB: ${POSTGRES_DB:-formation_db}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
