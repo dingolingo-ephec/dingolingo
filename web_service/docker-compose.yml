@@ -61,6 +61,7 @@ services:
     depends_on:
       - db
     networks:
+      - web
       - internal
     labels:
       - "traefik.enable=true"
@@ -87,10 +88,6 @@ services:
     container_name: postgres_db
     env_file:
       - .env.local
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-admin}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-defaultpassword}
-      POSTGRES_DB: ${POSTGRES_DB:-formation_db}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
