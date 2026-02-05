@@ -20,7 +20,7 @@ build/
 
 # --- SÉCURITÉ & SECRETS (TRÈS IMPORTANT) ---
 # On ignore les fichiers contenant les mots de passe et configs IP
-.env
+# .env est OK car ne contient que le domaine (pas de secrets)
 .env.local
 .env.development.local
 .env.test.local
