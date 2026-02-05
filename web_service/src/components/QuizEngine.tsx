@@ -1,11 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 
 interface QuizEngineProps {
   exercises: any[];
   lessonId: number;
+}
+
+// Fonction pour mélanger un tableau (Fisher-Yates shuffle)
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 }
 
 export default function QuizEngine({ exercises, lessonId }: QuizEngineProps) {
@@ -15,7 +25,15 @@ export default function QuizEngine({ exercises, lessonId }: QuizEngineProps) {
   const [status, setStatus] = useState<"idle" | "correct" | "wrong">("idle");
   const [correctCount, setCorrectCount] = useState(0);
 
-  const current = exercises[step];
+  // Mélanger les options une seule fois par exercice (au montage et quand step change)
+  const shuffledExercises = useMemo(() => {
+    return exercises.map(exercise => ({
+      ...exercise,
+      shuffledOptions: exercise.options ? shuffleArray(exercise.options) : []
+    }));
+  }, [exercises]);
+
+  const current = shuffledExercises[step];
   const progress = ((step + 1) / exercises.length) * 100;
 
   const handleCheck = () => {
@@ -82,7 +100,7 @@ export default function QuizEngine({ exercises, lessonId }: QuizEngineProps) {
 
       {/* Options */}
       <div className="space-y-3 mb-24">
-        {current.options?.map((opt: string) => (
+        {current.shuffledOptions?.map((opt: string) => (
           <button
             key={opt}
             onClick={() => status === "idle" && setSelected(opt)}

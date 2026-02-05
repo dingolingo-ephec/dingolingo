@@ -9,6 +9,11 @@ export default async function FormateursPage() {
       formations: {
         include: {
           theme: true,
+          lessons: {
+            orderBy: { order: 'asc' },
+            take: 1,
+            select: { id: true }
+          },
           _count: {
             select: { lessons: true }
           }
@@ -74,27 +79,32 @@ export default async function FormateursPage() {
                   {/* Formations */}
                   {formateur.formations.length > 0 && (
                     <div className="space-y-2 pt-2">
-                      {formateur.formations.map((formation) => (
-                        <Link
-                          key={formation.id}
-                          href="/lessons"
-                          className="block p-3 bg-gray-50 hover:bg-orange-50 border border-gray-100 hover:border-orange-200 rounded-lg transition-all group"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="font-medium text-gray-900 text-sm group-hover:text-orange-600 transition-colors">
-                                {formation.titre}
+                      {formateur.formations.map((formation) => {
+                        const firstLessonId = formation.lessons[0]?.id;
+                        const href = firstLessonId ? `/lessons/${firstLessonId}` : '/lessons';
+                        
+                        return (
+                          <Link
+                            key={formation.id}
+                            href={href}
+                            className="block p-3 bg-gray-50 hover:bg-orange-50 border border-gray-100 hover:border-orange-200 rounded-lg transition-all group"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="font-medium text-gray-900 text-sm group-hover:text-orange-600 transition-colors">
+                                  {formation.titre}
+                                </div>
+                                <div className="text-xs text-gray-500 mt-0.5">
+                                  {formation.theme.nom} · {formation._count.lessons} leçon{formation._count.lessons > 1 ? 's' : ''}
+                                </div>
                               </div>
-                              <div className="text-xs text-gray-500 mt-0.5">
-                                {formation.theme.nom} · {formation._count.lessons} leçon{formation._count.lessons > 1 ? 's' : ''}
-                              </div>
+                              <svg className="w-4 h-4 text-gray-400 group-hover:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
                             </div>
-                            <svg className="w-4 h-4 text-gray-400 group-hover:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </div>
-                        </Link>
-                      ))}
+                          </Link>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
