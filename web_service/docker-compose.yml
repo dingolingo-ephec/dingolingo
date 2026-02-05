@@ -5,6 +5,8 @@ services:
   traefik:
     image: traefik:v3.0
     container_name: traefik
+    env_file:
+      - .env.local
     command:
       # API Dashboard (désactiver en prod si non nécessaire)
       - "--api.dashboard=true"
