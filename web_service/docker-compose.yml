@@ -39,15 +39,8 @@ services:
       - web
       - internal
     labels:
-      # Dashboard Traefik (optionnel, protégé par auth)
-      - "traefik.enable=true"
-      - "traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN:-localhost}`)"
-      - "traefik.http.routers.dashboard.service=api@internal"
-      - "traefik.http.routers.dashboard.entrypoints=websecure"
-      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
-      # Basic Auth pour le dashboard (générer avec: htpasswd -nb admin password)
-      - "traefik.http.routers.dashboard.middlewares=auth"
-      - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_AUTH:-admin:$$apr1$$xyz$$hashedpassword}"
+      # Dashboard Traefik désactivé (évite les erreurs DNS pour traefik.dingolingo.eu)
+      - "traefik.enable=false"
     restart: unless-stopped
 
   # ===========================================
